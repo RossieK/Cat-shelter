@@ -8,7 +8,10 @@ const VIEWS_PATH = path.resolve(config.viewsDir);
 const STATIC_FILES_PATH = path.resolve(config.staticFilesDir);
 
 const routeMap = {
-    '/': '/home/index.html'
+    '/': '/home/index.html',
+    '/addBreed': '/addBreed.html',
+    '/addCat': '/addCat.html',
+    '/addBreed': '/addBreed.html'
 };
 
 const mimeTypeMap = {
