@@ -3,6 +3,7 @@ const url = require('url');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const querystring = require('querystring');
 
 const VIEWS_PATH = path.resolve(config.viewsDir);
 const STATIC_FILES_PATH = path.resolve(config.staticFilesDir);
@@ -45,26 +46,32 @@ function sendFile(res, fullFilePath) {
 
 function httpHandler(req, res) {
     const pathname = url.parse(req.url).pathname;
+    const method = req.method.toUpperCase();
 
-    if (pathname.includes(`/${config.staticFilesDir}/`)) {
-        const fullStaticFilePath = path.resolve(pathname.slice(1));
-        sendFile(res, fullStaticFilePath);
-        return;
+    if (method == 'GET') {
+        if (pathname.includes(`/${config.staticFilesDir}/`)) {
+            const fullStaticFilePath = path.resolve(pathname.slice(1));
+            sendFile(res, fullStaticFilePath);
+            return;
+        }
+
+        const fileRelativePath = routeMap[pathname];
+
+        if (!fileRelativePath) {
+            const data = 'Not Found!';
+            res.writeHead(404, {
+                'Content-Length': Buffer.byteLength(data),
+                'Content-Type': 'text/plaing'
+            }).end(data);
+            return;
+        }
+
+        const fullFilePath = path.join(VIEWS_PATH, fileRelativePath);
+        sendFile(res, fullFilePath);
+    } else if (method === "POST") {
+        const queryObj = querystring.parse(req.query);
+        res.write(queryObj);
     }
-
-    const fileRelativePath = routeMap[pathname];
-
-    if (!fileRelativePath) {
-        const data = 'Not Found!';
-        res.writeHead(404, {
-            'Content-Length': Buffer.byteLength(data),
-            'Content-Type': 'text/plaing'
-        }).end(data);
-        return;
-    }
-
-    const fullFilePath = path.join(VIEWS_PATH, fileRelativePath);
-    sendFile(res, fullFilePath);
 }
 
 http.createServer(httpHandler).listen(config.port, function() {
