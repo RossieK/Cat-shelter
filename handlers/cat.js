@@ -143,8 +143,20 @@ module.exports = (req, res) => {
                 return;
             }
 
+            const id = pathname.split('/').pop();
+            const currentCat = cats.find((cat) => cat.id === id);
+
+            let modifiedData = data.toString().replace('{{id}}', id);
+            modifiedData = modifiedData.replace('{{name}}', currentCat.name);
+            modifiedData = modifiedData.replace('{{description}}', currentCat.description);
+
+            const breedAsOptions = breeds.map((b) => `<option value="${b}">${b}</option>`);
+            modifiedData = modifiedData.replace('{{catBreeds}}', breedAsOptions.join('/'));
+
+            modifiedData = modifiedData.replace('{{breed}}', currentCat.breed);
+
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.write(data);
+            res.write(modifiedData);
             res.end();
         });
     } else if (pathname.includes('/cats-find-new-home') && req.method === 'GET') {
