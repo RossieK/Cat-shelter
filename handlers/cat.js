@@ -172,8 +172,18 @@ module.exports = (req, res) => {
                 return;
             }
 
+            const id = pathname.split('/').pop();
+            const currentCat = cats.find((cat) => cat.id === id);
+
+            let modifiedData = data.toString().replace('{{id}}', id);
+            modifiedData = modifiedData.replace('{{image}}', currentCat.image);
+            modifiedData = modifiedData.replace('{{name}}', currentCat.name);
+            modifiedData = modifiedData.replace('{{name}}', currentCat.name);
+            modifiedData = modifiedData.replace('{{description}}', currentCat.description);
+            modifiedData = modifiedData.replace('{{breed}}', currentCat.breed);
+
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.write(data);
+            res.write(modifiedData);
             res.end();
         });
     } else {
