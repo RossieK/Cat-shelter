@@ -29,6 +29,8 @@ module.exports = (req, res) => {
             res.end();
         })
 
+    } else if (pathname === '/cats/add-cat' && req.method === 'POST') {
+
     } else if (pathname === '/cats/add-breed' && req.method === 'GET') {
 
         const filePath = path.normalize(path.join(__dirname, '../views/addBreed.html'));
@@ -46,6 +48,39 @@ module.exports = (req, res) => {
             res.end();
         });
 
+
+    } else if (pathname === '/cats/add-breed' && req.method === 'POST') {
+        let formData = '';
+        req.on('data', data => {
+            formData += data;
+        });
+
+        req.on('end', () => {
+            const body = qs.parse(formData);
+
+            fs.readFile('./data/breeds.json', (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+
+                let breeds = JSON.parse(data);
+                breeds.push(body.breed);
+                const json = JSON.stringify(breeds);
+
+                fs.writeFile('./data/breeds.json', json, (err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+
+                    console.log(`${body.breed} breed was successfully added to the breeds database!`);
+                });
+            });
+        });
+
+        res.writeHead(301, { 'location': '/' });
+        res.end();
 
     } else if (pathname.includes('/cats-edit') && req.method === 'GET') {
 
