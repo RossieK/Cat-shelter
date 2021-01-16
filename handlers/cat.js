@@ -36,6 +36,48 @@ module.exports = (req, res) => {
 
     } else if (pathname === '/cats/add-cat' && req.method === 'POST') {
 
+        let form = new formidable.IncomingForm();
+        form.parse(req, (err, fields, files) => {
+
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            let oldPath = files.upload.path;
+            let newPath = path.normalize(path.join(__dirname.toString().replace('handlers', ''), '/content/images/' + files.upload.name));
+
+            fs.rename(oldPath, newPath, (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log(`Image successfully uploaded to ${newPath}!`);
+            });
+
+            fs.readFile('./data/cats.json', (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+
+                const allCats = JSON.parse(data);
+                allCats.push({ id: (cats.length + 1).toString(), ...fields, image: files.upload.name });
+                const json = JSON.stringify(allCats);
+
+                fs.writeFile('./data/cats.json', json, (err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log('New cat successfully added!');
+                })
+            });
+
+            res.writeHead(301, { 'location': '/' });
+            res.end();
+        });
+
     } else if (pathname === '/cats/add-breed' && req.method === 'GET') {
 
         const filePath = path.normalize(path.join(__dirname, '../views/addBreed.html'));
