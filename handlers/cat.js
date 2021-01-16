@@ -147,6 +147,23 @@ module.exports = (req, res) => {
             res.write(data);
             res.end();
         });
+    } else if (pathname.includes('/cats-find-new-home') && req.method === 'GET') {
+
+        const filePath = path.normalize(path.join(__dirname, '../views/catShelter.html'));
+
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                console.error(err);
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.write('404, Not Found!');
+                res.end();
+                return;
+            }
+
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write(data);
+            res.end();
+        });
     } else {
         return true;
     }
