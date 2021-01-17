@@ -159,6 +159,61 @@ module.exports = (req, res) => {
             res.write(modifiedData);
             res.end();
         });
+    } else if (pathname.includes('/cats-edit') && req.method === 'POST') {
+        let form = new formidable.IncomingForm();
+
+        form.parse(req, (err, fields, files) => {
+
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            if (files.upload.size > 0) {
+                const oldPath = files.upload.path;
+                const newPath = path.normalize(path.join(__dirname.toString().replace('handlers', ''), `/content/images/${files.upload.name}`));
+
+                fs.rename(oldPath, newPath, err => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`Image successfully uploaded to : ${newPath}!`);
+                });
+            }
+
+            fs.readFile('./data/cats.json', 'utf-8', (err, data) => {
+
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+
+                const id = pathname.split('/').pop();
+                let allCats = JSON.parse(data);
+                for (const cat of allCats) {
+                    if (cat.id === id) {
+                        cat.name = fields.name;
+                        cat.description = fields.description;
+                        cat.breed = fields.breed;
+
+                        if (files.upload.size > 0) { cat.image = files.upload.name; }
+                    }
+                };
+
+                const json = JSON.stringify(allCats);
+                fs.writeFile('./data/cats.json', json, (err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`Cat ID:${id} successfully edited!`);
+                });
+            });
+
+            res.writeHead(301, { 'location': '/' });
+            res.end();
+        })
     } else if (pathname.includes('/cats-find-new-home') && req.method === 'GET') {
 
         const filePath = path.normalize(path.join(__dirname, '../views/catShelter.html'));
