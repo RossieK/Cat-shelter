@@ -241,6 +241,25 @@ module.exports = (req, res) => {
             res.write(modifiedData);
             res.end();
         });
+    } else if (pathname.includes('/cats-find-new-home') && req.method === 'POST') {
+        fs.readFile('./data/cats.json', 'utf8', (err, data) => {
+            if (err) {
+                throw err;
+            };
+
+            const id = pathname.split('/').pop();
+            let allCats = JSON.parse(data).filter(cat => cat.id !== id);
+            const json = JSON.stringify(allCats);
+
+            fs.writeFile('./data/cats.json', json, (err) => {
+                if (err) {
+                    throw err;
+                };
+                console.log(`Cat ID:${id} successfully adopted!`);
+            })
+        });
+        res.writeHead(301, { 'location': '/' });
+        res.end();
     } else {
         return true;
     }
